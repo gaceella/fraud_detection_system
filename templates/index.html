@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fraud Detection Dashboard</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+
+
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: #0f172a;
+    color: white;
+}
+
+/* Layout */
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 100vh;
+}
+
+/* Left Panel */
+.left {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    background: #1e293b;
+    padding: 30px;
+}
+
+.left h2 {
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 14px;
+    display: block;
+    margin-top: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    background: #22c55e;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
+button:hover {
+    background: #16a34a;
+}
+
+/* Right Panel */
+.right {
+    flex: 2;
+    min-width: 300px;
+    padding: 30px;
+}
+
+/* Card */
+.card {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* Fraud Bar */
+.bar {
+    width: 100%;
+    height: 20px;
+    background: #334155;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+}
+
+.fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease, background-color 0.5s ease;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #334155;
+    text-align: left;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .left, .right {
+        width: 100%;
+        padding: 20px;
+    }
+}
+</style>
+</head>
+
+<body>
+<header style="text-align: center; padding: 20px;">
+    <h1>Gaceella Fraud Detection System</h1>
+</header>
+<main class="container">
+
+    <!-- LEFT PANEL -->
+    <section class="left">
+        <h2>Transaction Input</h2>
+
+        <form action="/predict" method="post" autocomplete="off">
+            <label>Behavior Score</label>
+            <input type="number" step="any" name="V2" required>
+
+            <label>Location Risk</label>
+            <input type="number" step="any" name="V4" required>
+
+            <label>Frequency Score</label>
+            <input type="number" step="any" name="V11" required>
+
+            <label>Device Risk</label>
+            <input type="number" step="any" name="V17" required>
+
+            <label>Amount</label>
+            <input type="number" step="any" name="Amount" required>
+
+            <button type="submit">Analyze Transaction</button>
+        </form>
+    </section>
+
+    <!-- RIGHT PANEL -->
+    <section class="right">
+
+        <!-- FRAUD ANALYSIS -->
+        <div class="card">
+            <h2>Fraud Analysis</h2>
+
+            <h3>{{ prediction | default('No analysis yet') }}</h3>
+            <p>Risk Score: {{ risk | default(0) }}%</p>
+
+            <div class="bar" data-risk="{{ risk | default(0) }}" data-color="{{ color | default('#22c55e') }}">
+                <div class="fill"></div>
+            </div>
+        </div>
+
+        <!-- RECENT TRANSACTIONS -->
+        <div class="card">
+            <h2>Recent Transactions</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>$120</td>
+                        <td style="color:#22c55e;">Safe</td>
+                    </tr>
+                    <tr>
+                        <td>$980</td>
+                        <td style="color:#ef4444;">Fraud</td>
+                    </tr>
+                    <tr>
+                        <td>$300</td>
+                        <td style="color:#f59e0b;">Suspicious</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+</main>
+
+<!-- JS: Handle bar width and color dynamically -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const bars = document.querySelectorAll(".bar");
+    bars.forEach(bar => {
+        const fill = bar.querySelector(".fill");
+        let risk = parseFloat(bar.dataset.risk);
+        const color = bar.dataset.color;
+        if (isNaN(risk)) risk = 0;
+        risk = Math.max(0, Math.min(risk, 100)); // clamp 0-100
+        fill.style.width = risk + "%";
+        fill.style.backgroundColor = color;
+    });
+});
+</script>
+
+</body>
+</html>
